@@ -1,0 +1,35 @@
+name: new_flutter_project
+description: A new Flutter project.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+dependencies:
+  cupertino_icons: ^1.0.2
+  flutter:
+    sdk: flutter
+  flutter_form_builder: ^9.0.0
+  flutter_launcher_icons: ^0.13.1
+  geolocator: ^9.0.2
+  get: ^4.6.5
+  google_fonts: ^5.1.0
+  google_maps_flutter: ^2.2.6
+  permission_handler: ^10.2.0
+  sqflite: ^2.2.8+4
+  url_launcher: ^6.1.11
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/appicon.png"
+dev_dependencies:
+  flutter_lints: ^2.0.0
+  flutter_test:
+    sdk: flutter
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/man.png
+    - assets/images/yoga.png
+    - assets/images/note1.png
+    - assets/images/note2.png
