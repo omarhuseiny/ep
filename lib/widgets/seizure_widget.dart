@@ -18,13 +18,23 @@ class MyList extends StatefulWidget {
 }
 
 class _MyListState extends State<MyList> {
-  final List<Map<String, dynamic>> _myItems = [];
+  late List<dynamic> _myItems = [];
+  @override
+  void initState() {
+    super.initState();
+    getAllSeizures().then((s)
+    {
+      setState(() {
+        _myItems = s as List<dynamic>;
+      });
+    });
+  }
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _periodController = TextEditingController();
 
-  int last_sID = -1;
+  int lastsID = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +51,11 @@ class _MyListState extends State<MyList> {
                   padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                   child: ListTile(
                     tileColor: const Color(0xFFF8E8EE),
-                    title: Text("Seizure Name: ${_myItems[index]['name']}"),
+                    title: Text("Seizure Name: ${_myItems[index].seizureName}"),
                     subtitle: Text(
-                      "Seizure Peroid: ${_myItems[index]['period']} minutes",
+                      "Seizure Peroid: ${_myItems[index].duration} minutes",
                     ),
-                    trailing: Text(_myItems[index]['time']),
+                    trailing: Text(_myItems[index].time),
                   ),
                 );
               },
@@ -71,7 +81,7 @@ class _MyListState extends State<MyList> {
                 var last_seizure = data[count-1];
                 print(last_seizure);
 
-                last_sID = last_seizure['id'];
+                lastsID = last_seizure['id'];
 
                 _nameController.text = last_seizure['seizure_name'];
                 _timeController.text = last_seizure['time'];
@@ -225,21 +235,20 @@ class _MyListState extends State<MyList> {
                   ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        _myItems.add({
-                          'name': _nameController.text,
-                          'period': _periodController.text,
-                          'time': _timeController.text
-                        });
+                        _myItems.add(Seizure(
+                          seizureName: _nameController.text,
+                          time: _timeController.text,
+                          duration: _periodController.text));
                         _nameController.clear();
                         _periodController.clear();
                         _timeController.clear();
                       });
-                      if(last_sID != -1) {
-                        postAck(last_sID).then((response)
+                      if(lastsID != -1) {
+                        postAck(lastsID).then((response)
                         {
                           if(response.statusCode == 200)
                           {
-                            last_sID = -1;
+                            lastsID = -1;
                           }
                           else
                           {
@@ -323,4 +332,45 @@ class _MyListState extends State<MyList> {
 
     return response;
   }
+
+  Future<List<Seizure>?> getAllSeizures() async {
+    Uri url = Uri.parse('http://kirollos.rocks:6969/seizures/list/acked/');
+    final headers = {
+      'Authorization': 'Bearer 69420',
+      'Content-Type': 'application/json', // optional header for specifying the request payload format
+    };
+    http.Response response = await http.get(url, headers: headers);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print(data['data']);
+      return data['data'].map<Seizure>((json) => Seizure.fromJson(json)).toList();
+      //return data['data'];
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+}
+
+class Seizure {
+  final String seizureName;
+  final String time;
+  final String duration;
+
+  Seizure({
+    required this.seizureName,
+    required this.time,
+    required this.duration,
+  });
+
+  factory Seizure.fromJson(Map<String, dynamic> json) {
+    return Seizure(
+      seizureName: json['seizure_name'],
+      time: json['time'],
+      duration: json['duration'],
+    );
+  }
+  //@override
+  //String toString() {
+  //  return "Name : $seizureName, time : $time, duration : $duration";
+  //}
 }

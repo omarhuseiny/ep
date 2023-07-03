@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen>
               icon: Icon(Icons.home),
             ),
             Tab(
-              text: 'Add Note',
+              text: 'Notes',
               icon: Icon(Icons.note),
             ),
             Tab(
