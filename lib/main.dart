@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:new_flutter_project/screens/home_screen.dart';
 
-import 'screens/auth/sign_up_screen.dart';
+import 'screens/auth/sign_in_screen.dart';
 
 // import 'screens/home_screen.dart';
 
@@ -20,7 +20,8 @@ class MyApp extends StatelessWidget {
         // primaryColor: const Color(0xff372948),
         primarySwatch: Colors.brown,
       ),
-      home: const HomeScreen(),
+      //home: const HomeScreen(),
+      home: SignInScreen(),
     );
   }
 }

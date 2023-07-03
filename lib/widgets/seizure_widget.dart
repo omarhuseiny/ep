@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class MyList extends StatefulWidget {
   const MyList({super.key});
@@ -19,6 +23,8 @@ class _MyListState extends State<MyList> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _periodController = TextEditingController();
+
+  int last_sID = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +58,49 @@ class _MyListState extends State<MyList> {
           borderRadius: BorderRadius.circular(10.0),
         ),
         onPressed: () {
+          getRequest().then((response)
+          {
+            var body = json.decode(response.body);
+            print(body);
+            if(response.statusCode == 200 && body['err'] == null && body['status'] == "OK")
+            {
+              var count = body['count'];
+              print(count);
+              if(count > 0) {
+                var data = body['data'];
+                var last_seizure = data[count-1];
+                print(last_seizure);
+
+                last_sID = last_seizure['id'];
+
+                _nameController.text = last_seizure['seizure_name'];
+                _timeController.text = last_seizure['time'];
+                _periodController.text = last_seizure['duration'].toString();
+              }
+
+            }
+            else
+            {
+              var error = body['err'];
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Response Status'),
+                    content: Text('Error($response.statusCode): $error'),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+          });
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -185,6 +234,36 @@ class _MyListState extends State<MyList> {
                         _periodController.clear();
                         _timeController.clear();
                       });
+                      if(last_sID != -1) {
+                        postAck(last_sID).then((response)
+                        {
+                          if(response.statusCode == 200)
+                          {
+                            last_sID = -1;
+                          }
+                          else
+                          {
+                            var message = 'Error: $response.body["err"]';
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Response Status'),
+                                  content: Text(message),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Close'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        });
+                      }
                       Navigator.of(context).pop();
                     },
                     child: const Text('Add'),
@@ -203,5 +282,45 @@ class _MyListState extends State<MyList> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Future<http.Response> getRequest() async {
+    final url = Uri.parse('http://kirollos.rocks:6969/seizures/list/unacked/');
+
+    final headers = {
+      'Authorization': 'Bearer 69420',
+      'Content-Type': 'application/json', // optional header for specifying the request payload format
+    };
+
+    final response = await http.get(
+      url,
+      headers: headers
+    );
+
+    print(response.body);
+
+    return response;
+  }
+
+  Future<http.Response> postAck(int sID) async {
+    final url = Uri.parse('http://kirollos.rocks:6969/seizures/ack/');
+
+    final headers = {
+      'Authorization': 'Bearer 69420',
+      'Content-Type': 'application/json', // optional header for specifying the request payload format
+    };
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: json.encode({"sID": sID})
+    );
+
+    print("ACK body");
+    print(json.encode({"sID": sID}));
+
+    print(response.body);
+
+    return response;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:new_flutter_project/screens/auth/sign_up_screen.dart';
+import 'package:new_flutter_project/screens/home_screen.dart';
 
 import '../../utilites/colors.dart';
 import '../../utilites/strings.dart';
@@ -7,6 +8,9 @@ import '../../widgets/curvy_container.dart';
 import '../../widgets/custom_btn.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/rowspan.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // ignore: must_be_immutable
 class SignInScreen extends StatelessWidget {
@@ -66,10 +70,10 @@ class SignInScreen extends StatelessWidget {
                         errorBorderColor: AppColor.red,
                         enabledBorderColor: AppColor.gery,
                         focusBorderColor: AppColor.mainColor,
-                        controller: emailController,
+                        controller: usernameController,
                         fillColor: AppColor.gery,
-                        iconData: Icons.email,
-                        hint: "Email",
+                        iconData: Icons.person,
+                        hint: "Username",
                         validate: (value) {
                           //   if (!RegExp(RegularExp.validationEmail)
                           if (value.toString().length <= 2 ||
@@ -87,7 +91,7 @@ class SignInScreen extends StatelessWidget {
                         errorBorderColor: AppColor.red,
                         enabledBorderColor: AppColor.gery,
                         focusBorderColor: AppColor.mainColor,
-                        controller: emailController,
+                        controller: passwordController,
                         fillColor: AppColor.gery,
                         iconData: Icons.lock,
                         hint: "Password",
@@ -123,7 +127,53 @@ class SignInScreen extends StatelessWidget {
                         width: double.infinity,
                         text: "Sign In",
                         color: Colors.brown,
-                        function: () {},
+                        function: () {
+                          signinPostRequest().then((statusCode)
+                          {
+                            print('signin Status code: $statusCode');
+                            var message = "";
+                            if(statusCode == 200)
+                            {
+                              message = "Successful sign in!";
+                            }
+                            else if(statusCode == 403)
+                            {
+                              message = "Incorrect password!";
+                            }
+                            else if(statusCode == 404)
+                            {
+                              message = "User not found!";
+                            }
+                            else
+                            {
+                              message = "Error signing in!";
+                            }
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Response Status'),
+                                  content: Text(message),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        if(statusCode == 200)
+                                        {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                            );
+                                        }
+                                      },
+                                      child: const Text('Close'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          });
+                        },
                       ),
                       const Spacer(),
                     ],
@@ -146,5 +196,29 @@ class SignInScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<int> signinPostRequest() async {
+    final url = Uri.parse('http://kirollos.rocks:6969/user/signin/');
+
+    final headers = {
+      'Authorization': 'Bearer 69420',
+      'Content-Type': 'application/json', // optional header for specifying the request payload format
+    };
+
+    final payload = {
+      'username': usernameController.text,
+      'password': passwordController.text
+    };
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: json.encode(payload),
+    );
+
+    print(response.body);
+
+    return response.statusCode;
   }
 }

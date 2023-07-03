@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:new_flutter_project/screens/auth/sign_in_screen.dart';
+import 'package:new_flutter_project/screens/home_screen.dart';
 
 import '../../utilites/colors.dart';
 import '../../utilites/strings.dart';
@@ -7,6 +8,9 @@ import '../../widgets/curvy_container.dart';
 import '../../widgets/custom_btn.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/rowspan.dart';
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // ignore: must_be_immutable
 class SignUpScreen extends StatelessWidget {
@@ -103,7 +107,7 @@ class SignUpScreen extends StatelessWidget {
                         errorBorderColor: AppColor.red,
                         enabledBorderColor: AppColor.gery,
                         focusBorderColor: AppColor.mainColor,
-                        controller: emailController,
+                        controller: passwordController,
                         fillColor: AppColor.gery,
                         iconData: Icons.lock,
                         hint: "Password",
@@ -139,7 +143,53 @@ class SignUpScreen extends StatelessWidget {
                         width: double.infinity,
                         text: "Sign Up",
                         color: Colors.brown,
-                        function: () {},
+                        function: () {
+                          signupPostRequest().then((statusCode)
+                          {
+                            print('signup Status code: $statusCode');
+                            var message = "";
+                            if(statusCode == 201)
+                            {
+                              message = "Successful sign up!";
+                            }
+                            else if(statusCode == 403)
+                            {
+                              message = "User already exists!";
+                            }
+                            else
+                            {
+                              message = "Error creating an account!";
+                            }
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Response Status'),
+                                  content: Text(message),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        if(statusCode == 201)
+                                        {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                            );
+                                        }
+                                      },
+                                      child: const Text('Close'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          });
+                          //Navigator.push(
+                          //  context,
+                          //  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                          //);
+                        },
                       ),
                       const Spacer(),
                     ],
@@ -162,5 +212,64 @@ class SignUpScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void __makePostRequest() async {
+    final url = Uri.parse('http://kirollos.rocks:6969/user/signup/');
+
+    // Create a map of any request payload or parameters
+     final headers = {
+      'Authorization': 'Bearer 69420',
+      'Content-Type': 'application/json'
+    };
+    final payload = {
+      'username': usernameController.value,
+      'password': passwordController.value,
+      'first_name': '',
+      'last_name': '',
+      'email': emailController.value
+    };
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: json.encode(payload)
+    );
+
+    if (response.statusCode == 201) {
+      // Successful POST request
+      print('Request successful');
+      print(response.body);
+    } else {
+      // Handle errors or unsuccessful requests
+      print('Request failed with status: ${response.statusCode}');
+    }
+  }
+
+  Future<int> signupPostRequest() async {
+    final url = Uri.parse('http://kirollos.rocks:6969/user/signup/');
+
+    final headers = {
+      'Authorization': 'Bearer 69420',
+      'Content-Type': 'application/json', // optional header for specifying the request payload format
+    };
+
+    final payload = {
+      'username': usernameController.text,
+      'password': passwordController.text,
+      'first_name': '',
+      'last_name': '',
+      'email': emailController.text
+    };
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: json.encode(payload),
+    );
+
+    print(response.body);
+
+    return response.statusCode;
   }
 }
