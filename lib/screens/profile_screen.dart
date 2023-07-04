@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../widgets/profile_widget.dart';
 
+import 'package:new_flutter_project/main.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -13,9 +15,11 @@ class ProfileScreen extends StatelessWidget {
         title: const Text("My Profile"),
         toolbarHeight: 70,
       ),
-      body: const ProfileWidget(
-          name: 'Omer Tarek',
-          email: "omertarek@gmail.com",
+      body: ProfileWidget(
+          //name: 'Omer Tarek',
+          name: MyApp.username,
+          //email: "omertarek@gmail.com",
+          email: MyApp.email,
           age: 30,
           imageUrl: "assets/images/man.png",
           info:

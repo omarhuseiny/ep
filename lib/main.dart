@@ -10,6 +10,9 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  static String username = "";
+  static String email = "";
+
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {

@@ -121,12 +121,14 @@ class _MyListState extends State<MyList> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextField(
+                        readOnly: true,
                         controller: _nameController,
                         decoration: const InputDecoration(
                           labelText: 'Seizure name',
                         ),
                       ),
                       TextField(
+                        readOnly: true,
                         keyboardType: TextInputType.number,
                         controller: _periodController,
                         decoration: const InputDecoration(

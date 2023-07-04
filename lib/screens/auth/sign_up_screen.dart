@@ -90,6 +90,7 @@ class SignUpScreen extends StatelessWidget {
                         fillColor: AppColor.gery,
                         iconData: Icons.email,
                         hint: "Email",
+                        type:TextInputType.emailAddress,
                         validate: (value) {
                           //   if (!RegExp(RegularExp.validationEmail)
                           if (value.toString().length <= 2 ||
@@ -104,6 +105,7 @@ class SignUpScreen extends StatelessWidget {
                         height: 20,
                       ),
                       customTextFormField(
+                        visibleText: true,
                         errorBorderColor: AppColor.red,
                         enabledBorderColor: AppColor.gery,
                         focusBorderColor: AppColor.mainColor,
@@ -144,6 +146,69 @@ class SignUpScreen extends StatelessWidget {
                         text: "Sign Up",
                         color: Colors.brown,
                         function: () {
+                          if(usernameController.text.isEmpty || !RegExp(RegularExp.validationName).hasMatch(usernameController.text))
+                          {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Error'),
+                                  content: const Text("Invalid username!"),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Close'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                            return;
+                          }
+                          if(emailController.text.isEmpty || !RegExp(RegularExp.validationEmail).hasMatch(emailController.text))
+                          {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Error'),
+                                  content: const Text("Invalid email!"),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Close'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                            return;
+                          }
+                          if(passwordController.text.isEmpty || passwordController.text.length < 6)
+                          {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Error'),
+                                  content: const Text("Password must be greater than 6 characters!"),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Close'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                            return;
+                          }
                           signupPostRequest().then((statusCode)
                           {
                             print('signup Status code: $statusCode');
@@ -154,7 +219,7 @@ class SignUpScreen extends StatelessWidget {
                             }
                             else if(statusCode == 403)
                             {
-                              message = "User already exists!";
+                              message = "Error: User already exists!";
                             }
                             else
                             {
@@ -164,7 +229,7 @@ class SignUpScreen extends StatelessWidget {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text('Response Status'),
+                                  title: const Text('Sign up Response'),
                                   content: Text(message),
                                   actions: [
                                     ElevatedButton(
@@ -174,7 +239,7 @@ class SignUpScreen extends StatelessWidget {
                                         {
                                           Navigator.push(
                                             context,
-                                            MaterialPageRoute(builder: (context) => const HomeScreen()),
+                                            MaterialPageRoute(builder: (context) => SignInScreen()),
                                             );
                                         }
                                       },

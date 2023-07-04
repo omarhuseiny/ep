@@ -12,6 +12,8 @@ import '../../widgets/rowspan.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:new_flutter_project/main.dart';
+
 // ignore: must_be_immutable
 class SignInScreen extends StatelessWidget {
   SignInScreen({super.key});
@@ -88,6 +90,7 @@ class SignInScreen extends StatelessWidget {
                         height: 20,
                       ),
                       customTextFormField(
+                        visibleText: true,
                         errorBorderColor: AppColor.red,
                         enabledBorderColor: AppColor.gery,
                         focusBorderColor: AppColor.mainColor,
@@ -128,6 +131,48 @@ class SignInScreen extends StatelessWidget {
                         text: "Sign In",
                         color: Colors.brown,
                         function: () {
+                          if(usernameController.text.isEmpty || !RegExp(RegularExp.validationName).hasMatch(usernameController.text))
+                          {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Error'),
+                                  content: const Text("Invalid username!"),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Close'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                            return;
+                          }
+                          if(passwordController.text.isEmpty)
+                          {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Error'),
+                                  content: const Text("Password field empty!"),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Close'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                            return;
+                          }
                           signinPostRequest().then((statusCode)
                           {
                             print('signin Status code: $statusCode');
@@ -138,11 +183,11 @@ class SignInScreen extends StatelessWidget {
                             }
                             else if(statusCode == 403)
                             {
-                              message = "Incorrect password!";
+                              message = "Error: Incorrect password!";
                             }
                             else if(statusCode == 404)
                             {
-                              message = "User not found!";
+                              message = "Error: User not found!";
                             }
                             else
                             {
@@ -152,7 +197,7 @@ class SignInScreen extends StatelessWidget {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text('Response Status'),
+                                  title: const Text('Sign in Response'),
                                   content: Text(message),
                                   actions: [
                                     ElevatedButton(
@@ -218,6 +263,12 @@ class SignInScreen extends StatelessWidget {
     );
 
     print(response.body);
+
+    if(response.statusCode == 200)
+    {
+      MyApp.username = json.decode(response.body)['username'];
+      MyApp.email = json.decode(response.body)['email'];
+    }
 
     return response.statusCode;
   }
